@@ -62,17 +62,3 @@ func CheckPassword(password string, pbHash string) (isValid bool, err error) {
 	// Return false on everything else
 	return false, nil
 }
-
-func main() {
-
-	pbHash,_ := CreatePasswordHash("hejsan")
-
-	authorized, _ := CheckPassword("hejsan", pbHash)
-
-	if authorized {
-		fmt.Println("Welcome good sir")
-	} else {
-		fmt.Println("GTFO")
-	}
-
-}

@@ -1,14 +1,9 @@
 package tepassword
 
-
 import "testing"
 
 func TestCreatePasswordHash(t *testing.T) {
-	passwordHash, err := CreatePasswordHash("test123")
-
-	if len(passwordHash) != 116 {
-		t.Errorf("Password hash should be 116 chars, this has is %d", len(passwordHash))
-	}
+	_, err := CreatePasswordHash("test123")
 
 	if err != nil {
 		t.Errorf("Got error message: %s", err.Error())

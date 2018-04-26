@@ -20,16 +20,16 @@ func CreatePasswordHash(password string) (string, error) {
 		return "", err
 	}
 
-	return generateHash(password, salt)
+	return generateHash(password, salt, 4096)
 }
 
-func generateHash(password string, salt []byte) (string, error) {
+func generateHash(password string, salt []byte, iterations int) (string, error) {
 
 	// Generates the password hash
-	passwordHash := pbkdf2.Key([]byte(password), salt, 4096, 32, sha256.New)
+	passwordHash := pbkdf2.Key([]byte(password), salt, iterations, 32, sha256.New)
 
 	// Builds how the hash should look like
-	pbHash := fmt.Sprintf("pbkdf2:sha256:4096:%x$%x", salt, passwordHash)
+	pbHash := fmt.Sprintf("pbkdf2:sha256:%d:%x$%x", iterations, salt, passwordHash)
 
 	// Returns the pbkdf2 hash
 	return pbHash, nil
@@ -42,12 +42,13 @@ func CheckPassword(password string, pbHash string) (isValid bool, err error) {
 	// Initiates variables
 	var salt []byte
 	var passwordHash string
+	var iterations int
 
 	// Retrieves the password hash and salt from the pbHash
-	fmt.Sscanf(pbHash, "pbkdf2:sha256:4096:%32x$%64s", &salt, &passwordHash)
+	fmt.Sscanf(pbHash, "pbkdf2:sha256:%d:%32x$%64s", &iterations, &salt, &passwordHash)
 
 	// Generates the hash with the users password
-	userPasswordHash, err := generateHash(password, salt)
+	userPasswordHash, err := generateHash(password, salt, iterations)
 
 	// Checks if there were any errors generating the hash
 	if err != nil {

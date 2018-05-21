@@ -2,34 +2,54 @@
 package tepassword
 
 import (
-	"crypto/rand"
+	"math/rand"
 	"log"
 	"golang.org/x/crypto/pbkdf2"
 	"crypto/sha256"
 	"fmt"
+	"strings"
 )
+
+
+func generateRandomString(lenght int) (string, error) {
+
+	// All the chars the salt could be generated from
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		"0123456789")
+
+	// Initializes a rune array where we will store our chars
+	buf := make([]rune, lenght)
+
+	// Adds a random char to the array
+	for i := range buf {
+		buf[i] = chars[rand.Intn(len(chars))]
+	}
+
+	// Returns the array as a string and error set to nil
+	return string(buf), nil
+}
 
 // This function generates the pbkdf2 hash from the password
 // the user specifies. It will generate a random salt for the
 // password hash.
 func CreatePasswordHash(password string) (string, error) {
 	// Generates 16bytes of random data
-	salt := make([]byte, 16)
-	if _, err := rand.Reader.Read(salt); err != nil {
+	salt, err := generateRandomString(10)
+	if err != nil {
 		log.Println("Random reader failed")
 		return "", err
 	}
-
 	return generateHash(password, salt, 4096)
 }
 
-func generateHash(password string, salt []byte, iterations int) (string, error) {
+func generateHash(password string, salt string, iterations int) (string, error) {
 
 	// Generates the password hash
-	passwordHash := pbkdf2.Key([]byte(password), salt, iterations, 32, sha256.New)
+	passwordHash := pbkdf2.Key([]byte(password), []byte(salt), iterations, 32, sha256.New)
 
 	// Builds how the hash should look like
-	pbHash := fmt.Sprintf("pbkdf2:sha256:%d:%x$%x", iterations, salt, passwordHash)
+	pbHash := fmt.Sprintf("pbkdf2:sha256:%d$%s$%x", iterations, salt, passwordHash)
 
 	// Returns the pbkdf2 hash
 	return pbHash, nil
@@ -40,15 +60,20 @@ func generateHash(password string, salt []byte, iterations int) (string, error) 
 func CheckPassword(password string, pbHash string) (isValid bool, err error) {
 
 	// Initiates variables
-	var salt []byte
-	var passwordHash string
+	var salt string
 	var iterations int
+	var fullHash string
 
 	// Retrieves the password hash and salt from the pbHash
-	fmt.Sscanf(pbHash, "pbkdf2:sha256:%d:%32x$%64s", &iterations, &salt, &passwordHash)
+	fmt.Sscanf(pbHash, "pbkdf2:sha256:%d$%s", &iterations, &fullHash)
+
+	// Parse out the salt part of the hash
+	salt = strings.Split(fullHash, "$")[0]
 
 	// Generates the hash with the users password
 	userPasswordHash, err := generateHash(password, salt, iterations)
+
+	fmt.Println(userPasswordHash)
 
 	// Checks if there were any errors generating the hash
 	if err != nil {

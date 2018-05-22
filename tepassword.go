@@ -73,8 +73,6 @@ func CheckPassword(password string, pbHash string) (isValid bool, err error) {
 	// Generates the hash with the users password
 	userPasswordHash, err := generateHash(password, salt, iterations)
 
-	fmt.Println(userPasswordHash)
-
 	// Checks if there were any errors generating the hash
 	if err != nil {
 		return false, err

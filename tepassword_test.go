@@ -1,6 +1,8 @@
 package tepassword
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCreatePasswordHash(t *testing.T) {
 	_, err := CreatePasswordHash("test123")

@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"strings"
+	"time"
 )
 
 
@@ -20,6 +21,9 @@ func generateRandomString(lenght int) (string, error) {
 
 	// Initializes a rune array where we will store our chars
 	buf := make([]rune, lenght)
+
+	// Initiates the randomness with a timestamp seed
+	rand.Seed(time.Now().UnixNano())
 
 	// Adds a random char to the array
 	for i := range buf {
